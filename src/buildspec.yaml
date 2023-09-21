@@ -1,0 +1,40 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 16
+      
+  pre_build:
+    commands:
+      - echo Installing source NPM dependencies...
+      - sudo yum install -y nodejs
+      # Install Angular CLI, If you are not using Angular 16, install angular/cli@1.7.0 or lower, confirm by running ng version inside your project folder
+      # - npm install -g @angular/cli@16
+      - npm install -g @angular/cli
+      - ng version
+      # Install Typescript version tsc@5.0.4
+      - npm install -g typescript@5.0.4
+      - echo INSTALLING typescript dependencies dependencies...
+      - echo Installation successful..
+      - tsc --version
+
+  build:
+    commands:
+      - echo Build started on `date`
+      - npm install
+      - ng build
+
+  post_build:
+     commands:
+      - cp ./src/scripts/* ./dist/peacock
+      #this is used for the CodeDeploy Agent to install and run the app
+      - cp ./src/appspec.yml ./dist/peacock
+      - echo Build completed on `date`
+
+artifacts:
+  files:
+  #this will take all files within the dist folder which will then be zipped by CodeBuild then stored in S3
+      - '**/*'
+  base-directory: 'dist/peacock'     
+  discard-paths: no
